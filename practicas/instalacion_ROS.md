@@ -4,9 +4,9 @@ Para las prácticas, en principio os vale cualquier versión de ROS 1, no os rec
 
 Tenéis varias opciones para usar ROS 1 en vuestro ordenador:
 
-a) Usar una máquina virtual en cualquier SO
-b) Instalar ROS en linux nativo
-c) Instalar ROS en Windows
+- Usar una máquina virtual en cualquier SO
+- Instalar ROS en linux nativo
+- Opciones intermedias como instalar ROS en Windows usando WSL (Windows Subsystem for Linux). Aquí no lo describiremos con detalle pero podéis encontrar tutoriales en Youtube buscando por ejemplo "instalar Gazebo y ROS con WSL" (como siempre encontraréis más información si buscáis en inglés).
 
 ## Opción a) Usar una máquina virtual
 
@@ -113,10 +113,6 @@ roslaunch turtlebot_gazebo turtlebot_world.launch
 
 Debería aparecer una ventana del simulador Gazebo con un robot Turtlebot2 rodeado de varios objetos. (La primera vez es normal que tarde ya que tiene que bajarse los modelos 3D de los objetos).
 
-## Opción c): Instalar ROS en Windows
-
-
-Seguid las [instrucciones oficiales de instalación](http://wiki.ros.org/Installation/Windows). Yo no lo he probado personalmente aunque debería funcionar...
 
 
 
