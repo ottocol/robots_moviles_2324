@@ -1,9 +1,11 @@
 # Robots Móviles curso 2023-24
 # Práctica 1: Mapeado *naive*
 
+## 1. Introducción. Objetivos
+
 En esta práctica implementaremos un algoritmo sencillo de construcción de mapas para robots móviles usando ROS. El objetivo de la práctica es, por un lado recordar conceptos básicos de programación en ROS, y por otro hacer una aproximación inicial a un **problema básico en robótica móvil: el mapeado de un entorno desconocido**. 
 
-A falta de un término mejor al algoritmo propuesto lo hemos llamado mapeado *naive* o "ingenuo" porque nuestro algoritmo hará una simplificación poco realista: *suponer que en todo momento conocemos con precisión la posición actual del robot*. 
+A falta de un término mejor al algoritmo propuesto lo hemos llamado mapeado *naive* o "ingenuo" porque nuestro algoritmo hará una simplificación poco realista: *suponer que en todo momento conocemos con precisión la posición actual del robot*.
 
 Como veremos posteriormente en la asignatura con más detalle, en la realidad casi nunca va a ser así. Típicamente los robots móviles usan una técnica llamada **odometría** para calcular la posición actual. Dicha técnica genera errores que se van acumulando con el tiempo, de modo que la diferencia entre la posición real y la supuesta del robot va a ir aumentando gradualmente. Esto da lugar a mapas como el que se muestra en la figura 1. A la izquierda aparece el mundo simulado y a la derecha el mapa que construye nuestro algoritmo.
 
@@ -11,12 +13,12 @@ Como veremos posteriormente en la asignatura con más detalle, en la realidad ca
 
 Posteriormente, en el tema de SLAM (Mapeado y Localización Simultáneos) veremos cómo solucionar este problema.
 
-El mapa que aparece en la figura anterior es una *rejilla de ocupación*. Está "pixelado" porque esta rejilla es una matriz 2D en la que cada celda representa un "cuadrado" de unas determinadas dimensiones en el mundo real (en la figura, cada celda representa 30x30cm). Cada celda tiene un valor numérico que indica la certidumbre que tenemos de que en esa posición en el mundo real haya un obstáculo. En la figura, cuanto más alto es el valor más oscuro aparece el tono de gris. Lo veremos luego con más detalle.
+> El mapa que aparece en la figura anterior es una *rejilla de ocupación*. Está "pixelado" porque esta rejilla es una matriz 2D en la que cada celda representa un "cuadrado" de unas determinadas dimensiones en el mundo real (en la figura, cada celda representa 30x30cm). Cada celda tiene un valor numérico que indica la certidumbre que tenemos de que en esa posición en el mundo real haya un obstáculo. En la figura, cuanto más alto es el valor más oscuro aparece el tono de gris. Lo veremos luego con más detalle.
 
 El resto del documento es como sigue: en primer lugar veremos cómo usar los ficheros que os dejamos como punto de partida para la práctica. Luego cómo implementar los requisitos mínimos de la práctica: el algoritmo básico, cómo transformar coordenadas entre sistemas y cómo trabajar con mapas en ROS. Después veremos funcionalidades que podéis añadir para obtener más nota y finalmente el baremo de evaluación y plazos de entrega.
 
 
-## Código de ejemplo
+## 2. Plantilla de ejemplo
 
 Os dejamos un mundo simulado y un fichero de configuración de `rviz` para que podáis probar vuestro algoritmo.
 
@@ -52,25 +54,28 @@ Se abrirán dos ventanas: una con el simulador *stage* y otra con rviz. En *stag
 
 El *.launch* también pone en marcha un proceso de *teleop* que permite mover al robot con el teclado. Las teclas de control se mostrarán en la terminal. Recuerda que la ventana del *teleop* debe tener el foco de teclado para que la teleoperación funcione.
 
-## Requisitos mínimos de la práctica
-
-
+## 3. Requisitos mínimos de la práctica
 
 El algoritmo de mapeado es muy simple y se puede formular con el siguiente pseudocódigo:
 
 ```python
 #este código debería estar en el callback que reciba los mensajes del laser
 #obtener la transformación que relaciona el sist de coordenadas del laser con el global
+# Explicado en apartado 3.1 del enunciado
 trans = obtener_transformacion_del_laser_al_sist_global()
 Para cada distancia d detectada por laser:
     #convertimos la lectura del laser (distancia, ángulo) a coordenadas locales al robot 
+    # Explicado al comienzo del apartado 3.3
 	(x_l, y_l) = lectura_a_coord_locales(d, alfa)
 	#convertimos las coordenadas locales a globales
 	#usando la transformación obtenida antes
+	# Explicado en apartado 3.1 
 	(x_g,y_g) = coord_local_a_global(trans, x_l, y_l)
 	#calculamos la celda del mapa correspondiente a las coordenadas
+	# Explicado en apartado 3.2 
 	(x_c, y_c) = coords_a_celdas_mapa(x_g,y_g)
 	#actualizar la celda aumentando su valor de ocupación
+	# Explicado en apartado 3.2 
 	incrementar_celda(mapa, x_c, y_c) 
 #publicamos el mapa como un topic de ROS, típicamente /map
 publicar_mapa(mapa)
@@ -84,7 +89,7 @@ El código fuente debe tener comentarios indicando qué es cada variable (except
 
 Fijaos en que para implementar el pseudocódigo anterior necesitamos saber como transformar del sistema de coordenadas local al global y cómo funciona el tema de las celdas en los mapas basados en rejillas de ocupación en ROS. Vamos a ver estos aspectos.
 
-### Sistemas de coordenadas en ROS. Transformación entre sistemas.
+### 3.1. Sistemas de coordenadas en ROS. Transformación entre sistemas.
 
 En cualquier robot móvil hará falta en general más de un sistema de coordenadas. Por ejemplo, sensores como las cámaras 3D o los láseres, cuando detectan información lo hacen en su propio sistema de referencia (los ejes coinciden con la posición física del sensor), pero típicamente no coincidirán con los ejes del cuerpo del robot. Por otro lado, el sistema de referencia del cuerpo del robot se mueve conforme se mueve éste, pero necesitamos también sistemas externos "fijos". Por ejemplo, el sistema de coordenadas de un mapa del entorno.
 
@@ -133,7 +138,7 @@ except (tf2_ros.LookupException, tf2_ros.ConnectivityException,
 
 Nótese que al comienzo de la ejecución es normal que salte la excepción, ya que las transformaciones se hacen gracias a mensajes publicados por ROS y es posible que inicialmente no haya ninguno disponible.
 
-La transformación podemos aplicarla a un punto con coordenadas `(x,y,z)` como sigue:
+**La transformación que nos lleva de `map` a `base_laser_link` nos sirve para convertir puntos que estén en el sistema `base_laser_link` a `map`**. Si quieres ver las razones consulta el apéndice 1. Podemos aplicar la transformación a un punto en `base_laser_link` con coordenadas `(x,y,z)` como sigue:
 
 ```python
 import tf2_geometry_msgs
@@ -145,9 +150,9 @@ ps = PointStamped(point=punto)
 punto_trans = tf2_geometry_msgs.do_transform_point(ps, trans)
 ```
 
-Nota: en nuestro caso los sistemas `map` y `odom` ocupan la misma posición. Recordemos que `odom` es la posición inicial del robot "cuando se pone en marcha". Eso quiere decir que el (0,0,0) del mapa corresponderá con esta posición. Esta información se la damos a ROS en el `mapeado_naive.launch` mediante un `static_transform_publisher`, que es el tipo de nodo que se usa para publicar transformaciones estáticas (que no cambian con el tiempo) entre dos sistemas. Mira la línea 8 del archivo y la wiki de ROS sobre el [`static_transform_publisher`](http://wiki.ros.org/tf#static_transform_publisher) para más detalles.
+> En nuestro caso los sistemas `map` y `odom` ocupan la misma posición. Recordemos que `odom` es la posición inicial del robot "cuando se pone en marcha". Eso quiere decir que el (0,0,0) del mapa corresponderá con esta posición. Esta información se la damos a ROS en el `mapeado_naive.launch` mediante un `static_transform_publisher`, que es el tipo de nodo que se usa para publicar transformaciones estáticas (que no cambian con el tiempo) entre dos sistemas. Mira la línea 8 del archivo y la wiki de ROS sobre el [`static_transform_publisher`](http://wiki.ros.org/tf#static_transform_publisher) para más detalles.
 
-### Rejillas de ocupación en ROS
+### 3.2. Rejillas de ocupación en ROS
 
 Usaremos un mapa basado en una *rejilla de ocupación*. Dicho mapa básicamente es una matriz 2D en la que see discretiza el mundo real, indicando para cada "cuadrado" del mundo si creemos o no que en esa posición hay un obstáculo (pared, puerta, objeto,...).  Esto lo hacemos con un valor numérico, cuanto mayor es el valor más certidumbre tenemos en que hay un obstáculo. En ROS los valores deben estar entre 0 y 100. El valor 0 indicaría que sabemos con total seguridad que la celda es espacio libre y 100 que contiene un obstáculo. Podemos indicar una "incertidumbre total" sobre la ocupación de la celda con el valor -1.
 
@@ -224,23 +229,23 @@ y cada vez que queramos publicar el mapa:
 pub.publish(mapa)
 ```
 
-### Consejos de implementación
+### 3.3. Consejos de implementación
 
-- Intentar no malgastar recursos computacionales para no ralentizar el algoritmo: un laser puede publicar mensajes decenas de veces por segundo y cada mensaje puede contener miles de lecturas. No es factible procesar toda esta información.
+- El array `ranges` del mensaje del laser nos da las distancias detectadas . El campo `angle_min` es el ángulo inicial, de la primera lectura. El campo `angle_increment` indica la diferencia angular entre lectura y lectura. A partir de estos datos podéis obtener las coordenadas `(x,y)` de la lectura, usando trigonometría (en esto ROS no os va a ayudar).
+- Intentad no malgastar recursos computacionales para no ralentizar el algoritmo: un laser puede publicar mensajes decenas de veces por segundo y cada mensaje puede contener miles de lecturas. No es factible procesar toda esta información.
 	+ Procesar solo algunos mensajes del laser. En el *callback* del laser podéis implementar algún tipo de contador para que solo se procese 1 de cada `n` mensajes y el resto se ignoren. De manera un poco más sofisticada podéis usar el *timestamp* que hay en cada mensaje para comprobar si han pasado `n` segundos desde el último que se procesó. El *timestamp* está en el campo `header.stamp` del mensaje. El método `to_sec()` convierte el *timestamp* a segundos y simplemente restando *timestamps* podéis encontrar la diferencia.
 	+ Procesar solo algunas lecturas del laser. En el bucle que vaya recorriendo el array `ranges` con las lecturas del laser podéis saltaros posiciones ya que normalmente entre las lecturas la diferencia de ángulo es muy pequeña y no tiene sentido procesarlas todas.	  
-- No es necesario calcular con ROS la transformación entre `map` y `base_laser_link` para cada "rayo" del laser.
-- El array `ranges` del mensaje del laser nos da las distancias detectadas . El campo `angle_min` es el ángulo inicial, de la primera lectura. El campo `angle_increment` indica la diferencia angular entre lectura y lectura. A partir de estos datos podéis obtener las coordenadas `(x,y)` de la lectura, usando trigonometría (en esto ROS no os va a ayudar).
+- Siguiendo con consejos de eficiencia, no es necesario calcular con ROS la transformación entre `map` y `base_laser_link` para cada "rayo" del laser.
 - En el simulador *stage* si un "rayo" del laser llega a su alcance máximo sin detectar ningún objeto nos devolverá una lectura con este alcance máximo. Es decir, no podemos diferenciar entre el caso en que haya un objeto justo en el alcance máximo del laser o que haya espacio libre. Para no "meter la pata" lo mejor es que si tenéis una lectura con alcance máximo la ignoréis, en otro caso aparecerían objetos "fantasma". Podéis saber el alcance máximo del laser con el campo `range_max` del mensaje del laser. En el fichero `ejemplo.world` del simulador este alcance se define en la línea 6 con `range [ 0 30 ]` (donde 0 es el alcance mínimo del laser y 30 el máximo, en metros). Podéis cambiar estos valores para hacer pruebas si lo deseáis.
 - Variables globales: hay varios objetos que necesitaréis inicializar solo una vez pero también acceder desde el *callback* del laser. Por ejemplo el `tf2_ros.Buffer()` y el mapa. Aunque no es la solución más elegante, probablemente lo más sencillo sea usar variables globales para que se puedan definir en el programa principal y acceder desde el *callback*. Podéis usar cualquier otra solución que se os ocurra
 
-## Partes "adicionales" de la práctica
+## 4. Partes "adicionales" de la práctica
 
 Estas partes podéis realizarlas si queréis obtener más nota. Al lado de cada apartado se muestra la puntuación que se puede obtener.
 
-Si se os ocurre alguna mejora o ampliación adicional que no aparezca aquí, comentadlo con vuestra profesora de prácticas para que os diga qué puntuación podríais obtener.
+Si se os ocurre alguna mejora o ampliación adicional que no aparezca aquí, comentadlo con vuestro profesor de prácticas para que os diga qué puntuación podríais obtener.
 
-### Pruebas del algoritmo en el simulador stage (hasta 1 punto)
+### 4.1. Pruebas del algoritmo en el simulador stage (hasta 1 punto)
 
 Debéis probar el algoritmo al menos en un par de mundos simulados (el que os damos y uno más) variando los niveles de error en la odometría. 
 
@@ -256,7 +261,7 @@ rosrun map_server map_saver -f nombre_del_mapa
 
 Donde `nombre_del_mapa` es el nombre que queréis darle al mapa, por ejemplo `prueba1`. Esto generaría 2 archivos, `prueba1.yaml` y `prueba1.pgm`. El primero es un archivo de texto en formato YAML con información sobre el mapa (tamaño, resolución, ...). El segundo es el mapa en forma de imagen `.pgm` (este es un formato gráfico sin comprimir pensado para imágenes en tonos de gris. Hace años era muy común, ahora no tanto). 
 
-### Actualizar celdas libres (hasta 2 puntos)
+### 4.2. Actualizar celdas libres (hasta 2 puntos)
 
 En la figura 1 aparece un mapa con zonas claras y oscuras, en las que no solamente se está incrementando el valor de las celdas que representan los obstáculos sino también decrementando las que representan espacio libre. La idea es que para cada lectura podemos incrementar la celda correspondiente a la misma, y también *decrementar el valor de todas las celdas que están en el camino del "rayo"* hasta llegar a la lectura.
 
@@ -264,13 +269,13 @@ Para implementar esta funcionalidad necesitáis algún algoritmo que obtenga tod
 
 Si implementáis esta parte debéis comentar el código fuente de la implementación, describir el algoritmo de "raycasting" usado y de dónde lo habéis sacado.
 
-### Movimiento autónomo del robot (hasta 1 punto)
+### 4.3. Movimiento autónomo del robot (hasta 1 punto)
 
 En lugar de mover al robot con el teclado podéis implementar algún algoritmo que haga que se mueva aleatoriamente sin chocar con los obstáculos. Podéis por ejemplo ver la media de las lecturas del laser a la izquierda y a la derecha del robot y girar en la dirección en que la media sea mayor, es decir, la que tiene más espacio libre. Podéis usar cualquier otro enfoque que se os ocurra.
 
 Si implementáis esta parte debéis comentar el código fuente de la implementación y describir aparte con el máximo detalle posible la idea en la que se basa vuestro algoritmo. 
 
-### Probar el algoritmo en los Turtlebots del laboratorio (hasta 1 punto)
+### 4.4. Probar el algoritmo en los Turtlebots del laboratorio (hasta 1 punto)
 
 Para probar el algoritmo en los Turtlebot 2 del laboratorio, lo primero que tendréis que hacer es comprobar si los *topics* que usáis son los mismos en `stage` que en el Turtlebot real. En principio el *topic* del mapa es igual, pero el laser, y si usáis alguno más, probablemente cambiarán.
 
@@ -289,7 +294,7 @@ def callback(msg):
 
 Si realizáis esta parte debéis entregar un mapa de alguna zona en la que hayáis movido al robot (laboratorio, pasillo,...) indicando las semejanzas y diferencias con la simulación.
 
-## Resumen del baremo de evaluación y fecha de entrega
+## 5. Resumen del baremo de evaluación y fecha de entrega
 
 - Implementar el algoritmo básico descrito en la sección "Requisitos mínimos de la práctica". El código fuente debe estar comentado (hasta 5 puntos)
 - Pruebas del algoritmo (hasta 1 punto)
@@ -297,7 +302,7 @@ Si realizáis esta parte debéis entregar un mapa de alguna zona en la que hayá
 - Movimiento autónomo del robot (hasta 1 punto)
 - Probar el algoritmo en los Turtlebot reales (hasta 1 punto)
 
-Como guía general, cualquier cosa que no haya sido elaborada por vosotros, sino que hayáis obtenido de alguna fuente externa (libros, internet, IAs generativas, ...) debéis referenciarla adecuadamente en un apartado de "referencias" de la práctica. Por ejemplo si habéis sacado un mundo de *stage* de alguna web o habéis tomado de un tutorial algún algoritmo de "raycasting" (parte adicional) o se lo habéis pedido a ChatGPT. Si se detecta cualquier elemento usado y no referenciado supondrá el suspenso automático en la práctica.
+Como guía general, cualquier cosa que no haya sido elaborada por vosotros, sino que hayáis obtenido de alguna fuente externa (libros, internet, IAs generativas tipo ChatGPT, ...) debéis referenciarla adecuadamente en un apartado de "referencias" de la práctica. Por ejemplo si habéis sacado un mundo de *stage* de alguna web o habéis tomado de un tutorial algún algoritmo de "raycasting" (parte adicional) o se lo habéis pedido a ChatGPT. Si se detecta cualquier elemento usado y no referenciado supondrá el suspenso automático en la práctica.
 
 La práctica se realizará de manera **individual**. El plazo de entrega concluye el día **10 de octubre a las 23:59**. La entrega se realizará por moodle, comprimiendo todos los archivos en un único archivo en formato comprimido.
 
@@ -333,7 +338,7 @@ La figura anterior contiene un ejemplo de grafo de transformaciones y de convers
 
 ## Apéndice 2: Modificar los mundos en stage
 
-El mundo simulado en *stage* que os dejamos como ejemplo está en la carpeta `world` y "dividido" en 2 archivos: `ejemplo.world` y `ejemplo.pgm`.  
+El mundo simulado en *stage* que os dejamos como ejemplo está en la carpeta `world` y "dividido" en 2 archivos: `ejemplo.world` y `ejemplo.pgm`. 
 
 En nuestro caso el mundo simulado es cargado por el `mapeado_naive.launch`, que pone en marcha un nodo ros de tipo `stageros`. Si quisierais hacerlo manualmente la orden sería `rosrun stage_ros stageros <nombre_del_world>` donde el nombre del fichero .world *debe incluir la trayectoria completa desde la raíz del sistema de archivos*.
 
@@ -356,6 +361,6 @@ floorplan
 > ROS suele estar instalado físicamente en `/opt/ros/_nombre-de-la-version_`, por ejemplo `/opt/ros/noetic`. Dentro de esta carpeta, en `/share/stage/worlds` y `share/stage_ros/world` tenéis muchos otros ficheros de mundos de ejemplo, algunos multirobot o con sensores adicionales como cámaras (aunque simplificadas porque la simulación de Stage no es 3D sino 2.5D).
 
 
-## Referencias
+## Apéndice 3: Referencias
 
 [1] Alonzo Kelly, *Mobile Robotics: Mathematics, Models, and Methods*, Cambridge University Press, 2013.
