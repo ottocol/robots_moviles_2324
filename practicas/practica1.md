@@ -37,7 +37,7 @@ A continuación descargamos y compilamos los ficheros de ejemplo:
 ```bash
 #hay que hacerlo en la carpeta  "src" del workspace
 cd src
-git clone https://github.com/ottocol/mapeado_naive
+git clone https://github.com/ottocol/mapeado-naive.git
 catkin_make
 cd ..
 #para actualizar las variables de entorno y que encuentre el paquete
@@ -97,11 +97,10 @@ Esto hace que habitualmente sea necesario transformar coordenadas de un sistema 
 
 En el [REP (ROS Enhancement Proposal) 105](https://www.ros.org/reps/rep-0105.html) se definen una serie de sistemas de coordenadas estándar para robots móviles. Los que nos interesan de momento son los siguientes:
 
+- `base_laser_link` centrado en el láser, es el sistema en el que se obtienen las medidas del laser.
 - `base_link`: El sistema de coordenadas de la plataforma base del robot. Es un sistema local al robot, que se mueve cuando este se mueve. Típicamente se coloca en el centro de rotación del robot.
 - `odom`: Este sistema de coordenadas está fijo en el mundo (no se mueve cuando se mueve el robot) y su origen y orientación 0 coincide con la posición de partida del robot. Es lo que se conoce habitualmente como *odometría*: conforme el robot se va moviendo también va estimando su posición actual con respecto a este sistema.
 - `map`: Es un sistema de coordenadas asociado a un mapa del entorno. Está fijo en el mundo (no se mueve cuando se mueve el robot) y su origen y orientación 0 es arbitrario y depende de quien haya creado el mapa. El robot puede estimar su posición con respecto a este sistema comparando el mapa con lo que perciben actualmente los sensores. Esto se conoce como *localización* (lo veremos en la práctica 2).
-
-Además, como usaremos un laser para detectar obstáculos, tendremos un sistema asociado a él: `base_laser_link` es el nombre típico que se le suele dar, y es en el que se obtienen las medidas del laser.
 
 Si tenéis lanzado el `mapeado_naive.launch` de ejemplo podéis ver estos sistemas y las relaciones entre ellos ejecutando en una terminal:
 
@@ -231,6 +230,7 @@ pub.publish(mapa)
 
 ### 3.3. Consejos de implementación
 
+- El topic del laser en el simulador *stage* es `/base_scan`, diferente al que usan los Turtlebot reales que es `/scan`.
 - El array `ranges` del mensaje del laser nos da las distancias detectadas . El campo `angle_min` es el ángulo inicial, de la primera lectura. El campo `angle_increment` indica la diferencia angular entre lectura y lectura. A partir de estos datos podéis obtener las coordenadas `(x,y)` de la lectura, usando trigonometría (en esto ROS no os va a ayudar).
 - Intentad no malgastar recursos computacionales para no ralentizar el algoritmo: un laser puede publicar mensajes decenas de veces por segundo y cada mensaje puede contener miles de lecturas. No es factible procesar toda esta información.
 	+ Procesar solo algunos mensajes del laser. En el *callback* del laser podéis implementar algún tipo de contador para que solo se procese 1 de cada `n` mensajes y el resto se ignoren. De manera un poco más sofisticada podéis usar el *timestamp* que hay en cada mensaje para comprobar si han pasado `n` segundos desde el último que se procesó. El *timestamp* está en el campo `header.stamp` del mensaje. El método `to_sec()` convierte el *timestamp* a segundos y simplemente restando *timestamps* podéis encontrar la diferencia.
