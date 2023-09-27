@@ -1,20 +1,18 @@
 # Cómo trabajar con los robots turtlebot del laboratorio de robótica
 
-Los turtlebot llevan a bordo un PC (Intel NUC) en el que está instalado ROS Indigo (excepto el número 5 que tiene Kinetic). Este ordenador tiene conexión wifi, aunque no tiene pantalla. Vamos a necesitar un PC adicional para poder interactuar con el robot.
+Los turtlebot llevan a bordo un PC (Intel NUC) en el que está instalado ROS Indigo (excepto el número 5 que tiene Kinetic). Este ordenador tiene conexión wifi, aunque no tiene pantalla ni teclado/ratón. Vamos a necesitar un PC adicional para poder interactuar con el robot.
 
 
-## Conexión "física" con el robot
+## Modos de conexión
 
-> Los PCs del laboratorio no tienen wifi, salvo uno por cada mesa, consulta con el profesor cuáles son (en el momento de redactar este documento eran lel 3,4,8,12 y 15)
+> Los PCs del laboratorio no tienen wifi, salvo uno por cada mesa, consulta con el profesor cuáles son (en el momento de redactar este documento eran el 1,4,8,12 y 15)
  
 Arranca el robot con el interruptor de la base. Espera un minuto a que arranque su ordenador de a bordo. Ahora tienes que elegir cuál de los dos métodos siguientes quieres usar para conectar con el robot:
 
-- **Mediante VNC**: con la wifi podemos emplear los PCs del laboratorio (o tu portátil si lo prefieres) como terminales gráficos para el robot (es decir, básicamente como si fueran la pantalla/teclado/ratón del PC del robot). **No hace falta que vuestro PC tenga ROS** ni esté en linux ya que todo el código ROS se ejecuta en el propio robot.
 - **Cliente/servidor**: En este modo casi todo el código ROS se ejecuta en nuestro PC y en el robot solo se ejecutan los nodos ROS que controlan el motor y los sensores **Vuestro PC debe tener instalado ROS**.
+- **Mediante VNC**: con la wifi podemos emplear los PCs del laboratorio (o tu portátil si lo prefieres) como terminales gráficos para el robot (es decir, básicamente como si fueran la pantalla/teclado/ratón del PC del robot). **No hace falta que vuestro PC tenga ROS** ni esté en linux ya que todo el código ROS se ejecuta en el propio robot.
 
-De momento, en las primeras prácticas vamos a usar el primer método, más adelante explicaremos el segundo.
-
-
+El método recomendado es el cliente/servidor, pero si no tienes ROS instalado en tu ordenador, también podrías usar el segundo.
 
 ## Alternativa 1: Conexión con el robot en modo cliente/servidor
 
@@ -29,7 +27,7 @@ De momento, en las primeras prácticas vamos a usar el primer método, más adel
 
 En el modo cliente/servidor, el cliente es nuestro PC y el servidor el robot. Hay algunos nodos de ROS que deben correr en el servidor (por ejemplo el `turtlebot_bringup.launch`) y otros en nuestro PC (por ejemplo `RViz`). En otros es indiferente.
 
-### Configuración en tu PC
+### Paso 1: Configuración en tu PC
 
 Para que este modo funcione, necesitas definir un par de variables de entorno en cada terminal
 
@@ -45,7 +43,11 @@ echo "ROS_HOSTNAME=LA_IP_DE_TU_PC" >> ~/.bashrc
 
 > **IMPORTANTE:** recuerda editar el `.bashrc` de tu PC después de terminar de trabajar con el robot y quitar las dos líneas que se han añadido, si no no te funcionará ROS sin tener el robot
 
-### Conectar con el robot en una terminal
+### Paso 2: Conectarte a la wifi del laboratorio
+
+Lo primero es conectarte a la red inalámbrica local del laboratorio. Hay 3 redes inalámbricas (`labrobot-wifi-5-1`, `labrobot-wifi-5-2`, `labrobot-wifi-2-4`) pero son todas la misma red local (hay 2 redes en 5 G y 1 en 2.4G para dispositivos inalámbricos más antiguos). Usa alguna de las que tengan un "5" en el nombre, serán más rápidas.
+
+### Paso 3: Conectar con el robot en una terminal de texto
 
 En este modo no tienes acceso al PC de a bordo del robot en modo gráfico, solo en modo texto. Para abrir una terminal en el robot haz:
 
@@ -71,13 +73,18 @@ Eso sí, necesitarás una terminal en el robot por cada uno de estos (abierta co
 
 ## Alternativa 2: Conexión con el robot mediante VNC<a name="vnc"></a>
 
+En este modo tu PC funciona solamente como un terminal gráfico del PC del robot. Es como si conectaras una pantalla y un teclado al robot pero en modo inalámbrico en lugar de con cable.
+
 **Ventajas**:
 
-- No Necesitas tener ROS en tu ordenador, ni siquiera Linux
+- No Necesitas tener ROS en tu ordenador, ni siquiera Linux, ya que usas solo el ROS del robot
 
 **Inconvenientes**:
  
  - No se puede usar la herramienta gráfica RViz
+ - Los robots no llevan encima un PC muy potente, con lo que no podrás ejecutar algoritmos muy complejos.
+ - Estás limitado a código que funcione correctamente con la versión de ROS que lleva el robot (Indigo). 
+ - Si tu código usa librerías adicionales que no vienen con ROS no podrás usarlo, ya que no se pueden instalar paquetes adicionales en el robot por cuestiones básicas de seguridad.
 
 ### Paso 1: Instalar en tu ordenador un cliente VNC
  
