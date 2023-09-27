@@ -99,7 +99,6 @@ En cada robot turtlebot ya está funcionando un servidor VNC. Cualquier cliente 
 
 Lo primero es conectarte a la red inalámbrica local del laboratorio. Hay 3 redes inalámbricas (`labrobot-wifi-5-1`, `labrobot-wifi-5-2`, `labrobot-wifi-2-4`) pero son todas la misma red local (hay 2 redes en 5 G y 1 en 2.4G para dispositivos inalámbricos más antiguos). Usa alguna de las que tengan un "5" en el nombre, serán más rápidas.
 
->
 ### Paso 3: Conectarte al robot
 
 En tu programa cliente de VNC (VNC Viewer, Remmina,...) debes introducir la IP del robot al que te quieres conectar y la contraseña de conexión. Los datos son:
