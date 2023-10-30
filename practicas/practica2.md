@@ -44,7 +44,7 @@ Pruebas a realizar:
 
 **Los días 18 y 25 de octubre** se podrá probar el mapeado y la localización en los Turtlebot reales. Se harán turnos para que se puedan usar los robots en grupos de 2-3 personas, **os puede tocar hacer la prueba uno de estos dos días (pero no ambos)**. La lista de turnos se elaborará durante la semana del 9 al 15 de octubre. 
 
-Se publicará una guía indicando los pasos exactos para probar mapeado y navegación en los Turtlebot. En esta guía se indicará qué pruebas debéis hacer y cómo documentarlas. La entrega de estas pruebas se realizará por separado en moodle (basta con hacer una sola entrega indicando las 2-3 personas que la realizaron), pero se valorará como parte del baremo de esta práctica (todos los que estéis juntos tendréis la misma puntuación).
+Se publicará una guía indicando los pasos exactos para probar mapeado y navegación en los Turtlebot. En esta guía se indicará qué pruebas debéis hacer y cómo documentarlas. La entrega de estas pruebas se realizará junto con la memoria principal de la práctica. Todos los que hayáis probado juntos el robot tendréis la misma puntuación.
 
 ## Parte adicional: análisis de los modelos de movimiento y de observación de ROS (hasta 1.5 puntos)
 
