@@ -98,11 +98,13 @@ Para implementar el algoritmo de movimiento al azar evitando obstáculos de mane
 
 ### Baremo y plazo de entrega
 
-- Hasta 5 puntos: implementar correctamente la funcionalidad pedida en el apartado "Tarea a desarrollar"
+
+
+- Hasta 6 puntos: implementar correctamente la funcionalidad pedida en el apartado "Tarea a desarrollar"
 - Hasta 1 punto: el código fuente debe estar adecuadamente documentado con comentarios.
-- Hasta 1.5 puntos: realizar y documentar pruebas de la tarea, indicando si funciona siempre, falla en algún momento, posibles problemas o causas que creéis que tienen los fallos, etc. Documentadla a ser posible con videos que muestren el funcionamiento.
+- Hasta 1 punto: realizar y documentar pruebas de la tarea, indicando si funciona siempre, falla en algún momento, posibles problemas o causas que creéis que tienen los fallos, etc. Documentadla a ser posible con videos que muestren el funcionamiento.
 - Hasta 1 punto: Mejorar el nodo de detección de color rojo: en el código de ejemplo se está siempre intentando detectar el color rojo, cuando en la tarea de "vuelta a la base" ya no es necesario, por lo que estamos malgastando recursos computacionales. Modificar el código para que publicando un mensaje en un determinado *topic* podamos dejar de estar suscritos al *topic* `/image` y publicando otro mensaje distinto volvamos a suscribirnos.
-- Hasta 1.5 puntos: mejorar la tarea añadiendo algún paso adicional, por ejemplo una vez detectado el color rojo, moverse hacia el objeto rojo (manteniéndolo centrado en la imagen) hasta llegar a una distancia especificada de él.
+- Hasta 1 punto: mejorar la tarea añadiendo algún paso adicional, por ejemplo una vez detectado el color rojo, moverse hacia el objeto rojo (manteniéndolo centrado en la imagen) hasta llegar a una distancia especificada de él.
 
 
 La práctica se podrá entregar hasta el **lunes 27 de noviembre a las 23:59**
