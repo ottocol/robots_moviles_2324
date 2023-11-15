@@ -10,7 +10,7 @@ En esta práctica vamos a programar un robot móvil para que realice una tarea e
 La tarea que debe realizar el robot en esta práctica es muy sencilla y es la siguiente: 
 
 1. Inicialmente debe moverse al azar evitando obstáculos hasta que detecte un objeto de color rojo en su campo de visión
-2. Una vez detectado, el robot debe imprimir un mensaje en la consola y debe volver al punto del que partió inicialmente. 
+2. Una vez detectado, el robot debe imprimir un mensaje en la consola y debe volver al punto del que partió inicialmente. Para facilitar la tarea, podéis asumir que el punto de partida es x:5, y:4, no es necesario que le pidáis la localización inicial al robot.
 
 En general para desarrollar cualquier tarea necesitaréis saber cómo implementar distintos elementos:
 
@@ -96,8 +96,9 @@ Para implementar el algoritmo de movimiento al azar evitando obstáculos de mane
 - La velocidad lineal (campo `linear.x` del `Twist`) debe ser proporcional a la media de distancia del "rayo" derecho e izquierdo. De ese modo cuanto más lejos estén los obstáculos más rápido irá el robot
 - Si la distancia media es inferior a un umbral podéis poner una velocidad de giro alta como "giro de emergencia" porque el robot va a chocar.
 
-### Baremo y plazo de entrega
+Se os deja [como ejemplo](https://github.com/ottocol/navigation_stage/blob/main/src/practica3_base.py) lo que podría ser el esqueleto de este estado: "moverse evitando obstáculos y esperando detectar el color rojo" (en el código tiene un nombre más corto :) ). Así podéis ver cómo encaja el código de ROS dentro de un estado de SMACH.
 
+### Baremo y plazo de entrega
 
 
 - Hasta 6 puntos: implementar correctamente la funcionalidad pedida en el apartado "Tarea a desarrollar"
